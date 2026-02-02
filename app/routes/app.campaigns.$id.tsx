@@ -881,6 +881,7 @@ export default function CampaignEditor() {
                                                 label="Font Family"
                                                 options={[
                                                     { label: "Inherit from theme", value: "inherit" },
+                                                    { label: "Helvetica", value: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
                                                     { label: "Space Grotesk", value: "'Space Grotesk', sans-serif" },
                                                     { label: "Playfair Display", value: "'Playfair Display', serif" },
                                                     { label: "Montserrat", value: "'Montserrat', sans-serif" },
