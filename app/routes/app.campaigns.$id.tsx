@@ -925,7 +925,7 @@ export default function CampaignEditor() {
                                         fontFamily: formState.fontFamily,
                                     }}
                                 >
-                                    <h3 style={{ margin: 0, marginBottom: 8 }}>{formState.welcomeTitle || "Title"}</h3>
+                                    <h3 style={{ margin: 0, marginBottom: 8, fontFamily: formState.fontFamily }}>{formState.welcomeTitle || "Title"}</h3>
                                     <p style={{ margin: 0, marginBottom: 16, opacity: 0.8, fontSize: 10 }}>
                                         {formState.welcomeSubtitle || "Subtitle"}
                                     </p>

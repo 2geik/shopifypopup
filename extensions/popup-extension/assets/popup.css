@@ -149,6 +149,7 @@
   font-weight: 700;
   line-height: 1.1;
   margin: 0 0 20px 0;
+  font-family: var(--ph-font);
 }
 
 .ph-subtitle {
@@ -165,6 +166,7 @@
   border: 2px solid var(--ph-accent);
   padding: 16px 32px;
   font-size: var(--ph-btn-font-size, 1rem);
+  font-family: var(--ph-font);
   /* Dynamic Font Size */
   font-weight: 700;
   text-transform: uppercase;
