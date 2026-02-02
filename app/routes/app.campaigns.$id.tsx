@@ -20,8 +20,6 @@ import {
     Banner,
     FormLayout,
     Modal,
-    DropZone,
-    Thumbnail,
     LegacyStack,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
@@ -248,76 +246,7 @@ export default function CampaignEditor() {
         submit(formData, { method: "POST" });
     };
 
-    // Image upload state
-    const [uploadingDesktop, setUploadingDesktop] = useState(false);
-    const [uploadingMobile, setUploadingMobile] = useState(false);
 
-    // Handle file upload to Shopify Files
-    const handleImageUpload = async (files: File[], field: "desktopImage" | "mobileImage") => {
-        const file = files[0];
-        if (!file) return;
-
-        const setUploading = field === "desktopImage" ? setUploadingDesktop : setUploadingMobile;
-        setUploading(true);
-
-        try {
-            // Step 1: Get staged upload URL
-            const stagingFormData = new FormData();
-            stagingFormData.append("intent", "getStagedUpload");
-            stagingFormData.append("filename", file.name);
-            stagingFormData.append("mimeType", file.type);
-            stagingFormData.append("fileSize", String(file.size));
-
-            const stagingResponse = await fetch("/app/upload", {
-                method: "POST",
-                body: stagingFormData,
-            });
-
-            const stagingData = await stagingResponse.json();
-
-            if (stagingData.error) {
-                console.error("Staging error:", stagingData.error);
-                setUploading(false);
-                return;
-            }
-
-            // Step 2: Upload file to staged URL
-            const uploadFormData = new FormData();
-            stagingData.parameters.forEach((param: { name: string; value: string }) => {
-                uploadFormData.append(param.name, param.value);
-            });
-            uploadFormData.append("file", file);
-
-            await fetch(stagingData.uploadUrl, {
-                method: "POST",
-                body: uploadFormData,
-            });
-
-            // Step 3: Create file record in Shopify
-            const createFormData = new FormData();
-            createFormData.append("intent", "createFile");
-            createFormData.append("resourceUrl", stagingData.resourceUrl);
-            createFormData.append("filename", file.name);
-
-            const createResponse = await fetch("/app/upload", {
-                method: "POST",
-                body: createFormData,
-            });
-
-            const createData = await createResponse.json();
-
-            if (createData.success && createData.imageUrl) {
-                updateField(field, createData.imageUrl);
-            } else {
-                // Use resourceUrl as fallback (Shopify will process the image)
-                updateField(field, stagingData.resourceUrl);
-            }
-        } catch (error) {
-            console.error("Upload error:", error);
-        } finally {
-            setUploading(false);
-        }
-    };
 
     // Note: Image URLs should be from Shopify Files or external CDN
 
@@ -479,7 +408,16 @@ export default function CampaignEditor() {
                                             {/* Desktop Image */}
                                             <BlockStack gap="200">
                                                 <Text as="p" variant="bodyMd" fontWeight="semibold">Desktop Image</Text>
-                                                {formState.desktopImage ? (
+                                                <TextField
+                                                    label="Image URL"
+                                                    labelHidden
+                                                    value={formState.desktopImage || ""}
+                                                    onChange={(v) => updateField("desktopImage", v)}
+                                                    autoComplete="off"
+                                                    placeholder="https://example.com/image.jpg"
+                                                    helpText="Paste a direct URL to your image"
+                                                />
+                                                {formState.desktopImage && (
                                                     <Box borderWidth="025" borderColor="border" borderRadius="200" padding="300">
                                                         <BlockStack gap="300">
                                                             <img
@@ -492,22 +430,10 @@ export default function CampaignEditor() {
                                                                 tone="critical"
                                                                 onClick={() => updateField("desktopImage", "")}
                                                             >
-                                                                Remove image
+                                                                Clear URL
                                                             </Button>
                                                         </BlockStack>
                                                     </Box>
-                                                ) : (
-                                                    <DropZone
-                                                        accept="image/*"
-                                                        type="image"
-                                                        onDrop={(files) => handleImageUpload(files as File[], "desktopImage")}
-                                                        disabled={uploadingDesktop}
-                                                    >
-                                                        <DropZone.FileUpload
-                                                            actionTitle={uploadingDesktop ? "Uploading..." : "Add image"}
-                                                            actionHint="or drop image to upload"
-                                                        />
-                                                    </DropZone>
                                                 )}
                                                 <Text as="p" variant="bodySm" tone="subdued">
                                                     Recommended: 1:2 aspect ratio (portrait)
@@ -517,7 +443,16 @@ export default function CampaignEditor() {
                                             {/* Mobile Image */}
                                             <BlockStack gap="200">
                                                 <Text as="p" variant="bodyMd" fontWeight="semibold">Mobile Image (Optional)</Text>
-                                                {formState.mobileImage ? (
+                                                <TextField
+                                                    label="Mobile Image URL"
+                                                    labelHidden
+                                                    value={formState.mobileImage || ""}
+                                                    onChange={(v) => updateField("mobileImage", v)}
+                                                    autoComplete="off"
+                                                    placeholder="https://example.com/mobile-image.jpg"
+                                                    helpText="Paste a direct URL to your mobile image"
+                                                />
+                                                {formState.mobileImage && (
                                                     <Box borderWidth="025" borderColor="border" borderRadius="200" padding="300">
                                                         <BlockStack gap="300">
                                                             <img
@@ -530,22 +465,10 @@ export default function CampaignEditor() {
                                                                 tone="critical"
                                                                 onClick={() => updateField("mobileImage", "")}
                                                             >
-                                                                Remove image
+                                                                Clear URL
                                                             </Button>
                                                         </BlockStack>
                                                     </Box>
-                                                ) : (
-                                                    <DropZone
-                                                        accept="image/*"
-                                                        type="image"
-                                                        onDrop={(files) => handleImageUpload(files as File[], "mobileImage")}
-                                                        disabled={uploadingMobile}
-                                                    >
-                                                        <DropZone.FileUpload
-                                                            actionTitle={uploadingMobile ? "Uploading..." : "Add image"}
-                                                            actionHint="Leave empty to use desktop image"
-                                                        />
-                                                    </DropZone>
                                                 )}
                                                 <Text as="p" variant="bodySm" tone="subdued">
                                                     If empty, desktop image will be used on mobile
