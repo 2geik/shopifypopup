@@ -1,0 +1,29 @@
+{% schema %}
+{
+  "name": "Popup Hero",
+  "target": "body",
+  "javascript": "popup.js",
+  "stylesheet": "popup.css",
+  "settings": [
+    {
+      "type": "text",
+      "id": "campaign_id",
+      "label": "Campaign ID",
+      "info": "Leave empty to use the first active campaign"
+    },
+    {
+      "type": "text",
+      "id": "app_url",
+      "label": "App URL",
+      "info": "Your app's URL for API calls (e.g., https://your-app.fly.dev). Leave empty for development."
+    }
+  ]
+}
+{% endschema %}
+
+<div 
+  id="popup-hero-root" 
+  data-campaign-id="{{ block.settings.campaign_id }}"
+  data-app-url="{{ block.settings.app_url }}"
+  data-shop="{{ shop.permanent_domain }}"
+></div>

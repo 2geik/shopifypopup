@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model Campaign {
+  id                    String   @id @default(cuid())
+  shop                  String
+  title                 String
+  status                String   @default("DRAFT") // DRAFT, ACTIVE, PAUSED
+  
+  // Trigger Settings
+  triggerDelay          Int      @default(3)
+  triggerPages          String   @default("all")
+  triggerUrlParam       String?
+  
+  // Audience Settings
+  showToMembers         Boolean  @default(false)
+  preventDuplicates     Boolean  @default(true)
+  redisplayAfterDays    Int      @default(7)
+  
+  // Images
+  desktopImage          String?
+  mobileImage           String?
+  imagePosition         String   @default("left")
+  mobileImagePosition   String   @default("top")
+  hideImageOnMobile     Boolean  @default(false)
+  imageRatio            Int      @default(40)
+  
+  // Welcome Step
+  welcomeTitle          String   @default("GET 10% OFF")
+  welcomeSubtitle       String   @default("Sign up to our newsletter and unlock your exclusive discount.")
+  welcomeButtonText     String   @default("CLAIM OFFER")
+  
+  // Form Step
+  formTitle             String   @default("UNLOCK YOUR DISCOUNT")
+  formSubtitle          String   @default("Enter your details below.")
+  showEmailField        Boolean  @default(true)
+  emailRequired         Boolean  @default(true)
+  emailPlaceholder      String   @default("Email Address")
+  showPhoneField        Boolean  @default(false)
+  phoneRequired         Boolean  @default(false)
+  phonePlaceholder      String   @default("Phone Number")
+  formButtonText        String   @default("SIGN UP")
+  
+  // Success Step
+  successTitle          String   @default("YOU'RE IN!")
+  successSubtitle       String   @default("Here is your discount code:")
+  successBtn1Text       String   @default("CONTINUE")
+  successBtn1Link       String   @default("")
+  successBtn2Text       String   @default("")
+  successBtn2Link       String   @default("")
+  
+  // Discount Settings
+  discountType          String   @default("none") // none, existing, auto
+  discountCode          String?
+  discountValue         Int      @default(10)
+  
+  // Styles
+  backgroundColor       String   @default("#1a1a1a")
+  textColor             String   @default("#ffffff")
+  buttonTextColor       String   @default("#ffffff")
+  accentColor           String   @default("#d4a017")
+  overlayColor          String   @default("rgba(0,0,0,0.7)")
+  borderRadius          Int      @default(16)
+  buttonStyle           String   @default("filled")
+  closeButtonStyle      String   @default("circle")
+  noThanksText          String   @default("No thanks")
+  fontFamily            String   @default("inherit")
+  titleFontSize         Int      @default(40) // px
+  subtitleFontSize      Int      @default(18) // px
+  buttonFontSize        Int      @default(16) // px
+  
+  titleFontSizeMobile    Int      @default(24) // px
+  subtitleFontSizeMobile Int      @default(14) // px
+  buttonFontSizeMobile   Int      @default(14) // px
+  
+  inputBorderColor       String   @default("#cccccc")
+  
+  // Stats
+  views                 Int      @default(0)
+  conversions           Int      @default(0)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  subscribers           Subscriber[]
+}
+
+model Subscriber {
+  id           String   @id @default(cuid())
+  shop         String
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  email        String?
+  phone        String?
+  discountCode String?
+  
+  createdAt    DateTime @default(now())
+  
+  @@unique([shop, email])
+  @@index([campaignId])
+}
